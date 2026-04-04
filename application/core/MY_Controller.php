@@ -28,6 +28,7 @@ class MY_Controller extends CI_Controller {
         
         // Load libraries
         $this->load->library(['session', 'form_validation']);
+        $this->load->library('permission');
         
         // Load database
         $this->load->database();
@@ -40,6 +41,8 @@ class MY_Controller extends CI_Controller {
         // Security headers
         $this->output->set_header('X-Frame-Options: SAMEORIGIN');
         $this->output->set_header('X-Content-Type-Options: nosniff');
+        $this->output->set_header('X-XSS-Protection: 1; mode=block');
+        $this->output->set_header('X-Frame-Options: SAMEORIGIN');
         $this->output->set_header('X-XSS-Protection: 1; mode=block');
     }
 }
