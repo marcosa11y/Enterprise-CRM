@@ -17,9 +17,10 @@ class Auth extends MY_Controller {
     {
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email|trim');
         $this->form_validation->set_rules('password', 'Password', 'required|trim');
+        $data['page_title'] = 'Login';
 
         if ($this->form_validation->run() == FALSE) {
-            $this->render('auth/login');
+            $this->load->view('auth/login', $data);
         } else {
             $email = $this->input->post('email');
             $password = $this->input->post('password');

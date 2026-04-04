@@ -22,7 +22,6 @@ class MY_Controller extends CI_Controller {
         
         // Load configuration
         $this->config->load('assets');
-        $this->config->load('constants');
         
         // Load helpers
         $this->load->helper(['url', 'form', 'asset', 'auth', 'text']);

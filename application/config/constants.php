@@ -85,8 +85,8 @@ defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automat
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
 
 // User Roles
-define('ROLE_ADMIN', 1);
-define('ROLE_MANAGER', 2);
+defined('ROLE_ADMIN') OR define('ROLE_ADMIN', 1);
+defined('ROLE_MANAGER') OR define('ROLE_MANAGER', 2);
 define('ROLE_AGENT', 3);
 
 // Status Codes
