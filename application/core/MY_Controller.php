@@ -1,67 +1,86 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/**
+ * Base Controller
+ * 
+ * All controllers extend this class
+ */
 class MY_Controller extends CI_Controller {
 
-    public $data = array();
+    /**
+     * @var array Data passed to views
+     */
+    protected $data = [];
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         parent::__construct();
         
-        // Load Global Libraries
-        $this->load->library('session');
-        $this->load->library('template'); // Custom library (created below)
-        $this->load->helper('url');
-        $this->load->helper('auth'); // Custom helper (created below)
+        // Load configuration
+        $this->config->load('assets');
+        $this->config->load('constants');
         
-        // Global Data for Views
-        $this->data['base_url'] = base_url();
+        // Load helpers
+        $this->load->helper(['url', 'form', 'asset', 'auth', 'text']);
+        
+        // Load libraries
+        $this->load->library(['session', 'form_validation']);
+        
+        // Load database
+        $this->load->database();
+        
+        // Global data for views
         $this->data['site_name'] = 'Enterprise CRM';
         $this->data['current_page'] = $this->router->class;
+        $this->data['current_user'] = current_user();
         
-        // Security Header
-        header("X-Frame-Options: SAMEORIGIN"); // Prevent Clickjacking
-    }
-
-    // Helper to render views with layout
-    protected function render($view, $data = array(), $return = FALSE)
-    {
-        $this->data = array_merge($this->data, $data);
-        return $this->template->load('layouts/main', $view, $this->data, $return);
+        // Security headers
+        $this->output->set_header('X-Frame-Options: SAMEORIGIN');
+        $this->output->set_header('X-Content-Type-Options: nosniff');
+        $this->output->set_header('X-XSS-Protection: 1; mode=block');
     }
 }
 
-// Protected Controller (Requires Login)
+/**
+ * Authenticated Controller
+ * 
+ * Requires user to be logged in
+ */
 class Auth_Controller extends MY_Controller {
 
     public function __construct()
     {
         parent::__construct();
         
-        if (!$this->session->userdata('logged_in')) {
-            // Check if AJAX request
-            if ($this->input->is_ajax_request()) {
-                show_error('Session expired', 401);
-            }
-            redirect('auth/login');
+        // Check authentication
+        if (!is_logged_in()) {
+            $this->session->set_flashdata('error', 'Please login to continue.');
+            redirect('auth/login', 'refresh');
         }
-
-        // Load User Data for every protected request
-        $this->data['user'] = $this->session->userdata('user_data');
         
-        // Update Last Activity
-        $this->db->where('id', $this->data['user']['id'])
-                 ->update('users', array('last_login' => date('Y-m-d H:i:s')));
+        // Update last activity
+        $this->session->set_userdata('last_activity', time());
     }
 }
 
-// Admin Only Controller
+/**
+ * Admin Controller
+ * 
+ * Requires admin role
+ */
 class Admin_Controller extends Auth_Controller {
-    public function __construct() {
+
+    public function __construct()
+    {
         parent::__construct();
-        if ($this->data['user']['role_id'] != ROLE_ADMIN) {
-            show_error('Access Denied: Administrators Only', 403);
+        
+        // Check admin role
+        if (!is_admin()) {
+            show_error('Access Denied: Administrator privileges required.', 403);
         }
     }
 }

@@ -1,0 +1,41 @@
+
+---
+
+## 📄 Step 4: Create `database.php.example`
+
+**File:** `application/config/database.php.example`
+
+```php
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+/*
+|--------------------------------------------------------------------------
+| Database Configuration (EXAMPLE - DO NOT COMMIT REAL CREDENTIALS)
+|--------------------------------------------------------------------------
+|
+| Copy this file to database.php and update with your credentials
+|
+*/
+
+$db['default'] = array(
+    'dsn'    => '',
+    'hostname' => 'localhost',
+    'username' => 'root',
+    'password' => '',
+    'database' => 'crm_db',
+    'dbdriver' => 'mysqli',
+    'dbprefix' => '',
+    'pconnect' => FALSE,
+    'db_debug' => (ENVIRONMENT !== 'production'),
+    'cache_on' => FALSE,
+    'cachedir' => '',
+    'char_set' => 'utf8mb4',
+    'dbcollat' => 'utf8mb4_general_ci',
+    'swap_pre' => '',
+    'encrypt'  => FALSE,
+    'compress' => FALSE,
+    'stricton' => FALSE,
+    'failover' => array(),
+    'save_queries' => TRUE
+);

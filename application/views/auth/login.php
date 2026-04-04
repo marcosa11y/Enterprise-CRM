@@ -40,7 +40,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                         'required' => 'required',
                         'autofocus' => 'autofocus'
                     ]); ?>
-                    <?php echo form_error('email', '<div class="text-danger small mt-1">', '</div>'); ?>
+                <?php echo form_error('email', '<div class="text-danger small mt-1">', '</div>'); ?>
                 </div>
                 
                 <div class="mb-4">
