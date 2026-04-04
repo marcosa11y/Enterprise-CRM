@@ -1,0 +1,7 @@
+# Create empty .gitkeep files
+echo "" > application/cache/.gitkeep
+echo "" > application/logs/.gitkeep
+echo "" > assets/css/.gitkeep
+echo "" > assets/js/.gitkeep
+echo "" > assets/img/.gitkeep
+echo "" > uploads/.gitkeep

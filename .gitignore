@@ -1,0 +1,47 @@
+# CodeIgniter 3 Specific
+application/cache/*
+application/logs/*
+!application/cache/.gitkeep
+!application/logs/.gitkeep
+
+# Database Configuration (Contains Passwords)
+application/config/database.php
+
+# Environment Specific
+application/config/config_local.php
+.env
+
+# IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Composer (if used later)
+vendor/
+composer.lock
+
+# Node Modules (if used later)
+node_modules/
+
+# Uploaded Files
+uploads/
+assets/uploads/
+
+# Session Files (if using file sessions)
+application/sessions/*
+
+# Backup Files
+*.bak
+*.backup
+*.sql
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
