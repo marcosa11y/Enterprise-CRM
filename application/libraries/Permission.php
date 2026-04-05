@@ -1,61 +1,82 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Permission 
-{
+/**
+ * Permission Library - Clean Version
+ * Removed: Unnecessary helper dependencies, redundant checks
+ */
+class Permission {
+
     protected $CI;
-    protected $user_permissions = [];
-    protected $is_loaded = FALSE;
+    protected $permissions = array();
+    protected $user_role_id = NULL;
 
     public function __construct()
     {
         $this->CI =& get_instance();
-        $this->CI->load->model('permission_model');
-    }
-
-    /**
-     * Load permissions for the current user once per request
-     */
-    protected function load_user_permissions()
-    {
-        if ($this->is_loaded) return;
-
-        $user = current_user();
-        if ($user && isset($user['role_id'])) {
-            $this->user_permissions = $this->CI->permission_model->get_permissions_by_role($user['role_id']);
-        }
+        $this->CI->load->model('Permission_model');
         
-        $this->is_loaded = TRUE;
+        if ($this->CI->session->userdata('logged_in')) {
+            $this->user_role_id = $this->CI->session->userdata('role_id');
+            $this->_load_permissions();
+        }
     }
 
-    /**
-     * Check if current user can perform an action on a resource
-     * Usage: $this->permission->can('leads', 'create')
-     */
-    public function can($resource, $action)
+    public function can($module, $action = 'view')
     {
-        $this->load_user_permissions();
-
-        // Admin bypass (Safety net)
-        if (is_admin()) return TRUE;
-
-        // Check permission matrix
-        if (isset($this->user_permissions[$resource]) && 
-            in_array($action, $this->user_permissions[$resource])) {
+        // Admin bypass - no database query needed
+        if ($this->user_role_id === 1) {
             return TRUE;
         }
 
-        return FALSE;
+        // Load permissions once per request
+        if (empty($this->permissions) && $this->user_role_id) {
+            $this->_load_permissions();
+        }
+
+        // Deny if no permissions loaded
+        if (empty($this->permissions)) {
+            return FALSE;
+        }
+
+        // Check module exists
+        if (!isset($this->permissions[$module])) {
+            return FALSE;
+        }
+
+        // Map action to database field
+        $field_map = array(
+            'view'   => 'can_view',
+            'create' => 'can_create',
+            'edit'   => 'can_edit',
+            'delete' => 'can_delete'
+        );
+
+        $field = isset($field_map[$action]) ? $field_map[$action] : 'can_view';
+        
+        return !empty($this->permissions[$module][$field]);
     }
 
-    /**
-     * Enforce permission - Throws 403 if not allowed
-     */
-    public function require($resource, $action)
+    public function clear_cache()
     {
-        if (!$this->can($resource, $action)) {
-            show_error('You do not have permission to access this resource.', 403);
-            // Or redirect: redirect('dashboard');
+        $this->permissions = array();
+    }
+
+    protected function _load_permissions()
+    {
+        if (!$this->user_role_id || $this->user_role_id === 1) {
+            return;
+        }
+
+        $permissions = $this->CI->Permission_model->get_by_role($this->user_role_id);
+
+        foreach ($permissions as $perm) {
+            $this->permissions[$perm->module] = array(
+                'can_view'   => (bool) $perm->can_view,
+                'can_create' => (bool) $perm->can_create,
+                'can_edit'   => (bool) $perm->can_edit,
+                'can_delete' => (bool) $perm->can_delete
+            );
         }
     }
 }

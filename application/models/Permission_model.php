@@ -1,25 +1,38 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Permission_model extends CI_Model 
-{
-    /**
-     * Get all permissions for a specific role ID
-     * Returns format: ['leads' => ['create', 'read'], ...]
-     */
-    public function get_permissions_by_role($role_id)
+/**
+ * Permission Model - Clean Version
+ * Removed: Unused methods, redundant queries
+ */
+class Permission_model extends CI_Model {
+
+    protected $table = 'permissions';
+
+    public function __construct()
     {
-        $this->db->select('resource, action');
-        $this->db->where('role_id', $role_id);
-        $query = $this->db->get('permissions');
+        parent::__construct();
+        $this->load->database();
+    }
 
-        $permissions = [];
-        if ($query->num_rows() > 0) {
-            foreach ($query->result_array() as $row) {
-                $permissions[$row['resource']][] = $row['action'];
-            }
+    public function get_by_role($role_id)
+    {
+        return $this->db->where('role_id', (int) $role_id)
+                        ->get($this->table)
+                        ->result();
+    }
+
+    public function update_permissions($role_id, $permissions)
+    {
+        $this->db->trans_start();
+        
+        foreach ($permissions as $module => $data) {
+            $this->db->where('role_id', $role_id)
+                     ->where('module', $module)
+                     ->update($this->table, $data);
         }
-
-        return $permissions;
+        
+        $this->db->trans_complete();
+        return $this->db->trans_status();
     }
 }

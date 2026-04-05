@@ -1,15 +1,13 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Debug extends CI_Controller {
+class Debug extends MY_Controller {
 
     public function __construct()
     {
         parent::__construct();
 
         // Load essentials manually (in case autoload isn't set)
-        $this->load->helper('url');
-        $this->load->helper('form');
         $this->load->database();
         $this->load->library('session');
 

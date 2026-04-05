@@ -2,86 +2,59 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Base Controller
- * 
- * All controllers extend this class
+ * Base Controller - Clean Version
+ * Removed: Duplicate loading, unused properties
  */
 class MY_Controller extends CI_Controller {
 
-    /**
-     * @var array Data passed to views
-     */
-    protected $data = [];
+    protected $data = array();
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
         parent::__construct();
         
-        // Load configuration
-        $this->config->load('assets');
-        
-        // Load helpers
-        $this->load->helper(['url', 'form', 'asset', 'auth', 'text']);
-        
-        // Load libraries
-        $this->load->library(['session', 'form_validation']);
-        $this->load->library('permission');
-        
-        // Load database
+        // Load once, use everywhere
         $this->load->database();
+        $this->load->library('session');
+        $this->load->helper(array('url', 'form'));
         
-        // Global data for views
+        // Global view data
         $this->data['site_name'] = 'Enterprise CRM';
         $this->data['current_page'] = $this->router->class;
-        $this->data['current_user'] = current_user();
         
         // Security headers
         $this->output->set_header('X-Frame-Options: SAMEORIGIN');
         $this->output->set_header('X-Content-Type-Options: nosniff');
-        $this->output->set_header('X-XSS-Protection: 1; mode=block');
-        $this->output->set_header('X-Frame-Options: SAMEORIGIN');
-        $this->output->set_header('X-XSS-Protection: 1; mode=block');
     }
 }
 
-/**
- * Authenticated Controller
- * 
- * Requires user to be logged in
- */
 class Auth_Controller extends MY_Controller {
 
     public function __construct()
     {
         parent::__construct();
         
-        // Check authentication
-        if (!is_logged_in()) {
-            $this->session->set_flashdata('error', 'Please login to continue.');
-            redirect('auth/login', 'refresh');
+        if (!$this->session->userdata('logged_in')) {
+            redirect('auth/login');
         }
         
-        // Update last activity
-        $this->session->set_userdata('last_activity', time());
+        // Load permission library only for authenticated users
+        $this->load->library('permission');
+        $this->data['user'] = array(
+            'id'       => $this->session->userdata('user_id'),
+            'username' => $this->session->userdata('username'),
+            'role_id'  => $this->session->userdata('role_id')
+        );
     }
 }
 
-/**
- * Admin Controller
- * 
- * Requires admin role
- */
 class Admin_Controller extends Auth_Controller {
 
     public function __construct()
     {
         parent::__construct();
         
-        // Check admin role
-        if (!is_admin()) {
+        if ($this->data['user']['role_id'] !== 1) {
             show_error('Access Denied: Administrator privileges required.', 403);
         }
     }
